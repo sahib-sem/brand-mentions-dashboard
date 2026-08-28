@@ -50,7 +50,13 @@ class MentionsRequest(BaseModel):
     filters: MentionFilters | None = None
 
 
-class TrendsRequest(DateRange):
+class TrendsRequest(MentionFilters):
+    """Trend buckets.
+
+    `model` and `sentiment` are optional additions to the documented contract so
+    the chart can reflect the same filters as the table.
+    """
+
     group_by: GroupBy = GroupBy.DAY
 
 

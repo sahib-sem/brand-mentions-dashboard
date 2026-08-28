@@ -1,34 +1,93 @@
 @import "tailwindcss";
 
+/*
+  Palette: warm bone paper, deep forest ink, one clay accent.
+  Chosen over a stock neutral/indigo scale so the dashboard reads as a
+  considered editorial surface rather than a default component kit.
+*/
 @theme {
-  --font-sans: "Avenir Next", Avenir, "Segoe UI", sans-serif;
-  --font-display: "Arial Rounded MT Bold", "Avenir Next", Avenir, sans-serif;
-  --color-ink: #17211b;
-  --color-forest: #173d2b;
-  --color-mint: #b9f5d3;
-  --color-cream: #f5f3ec;
-  --color-coral: #f17055;
+  --font-sans: var(--font-plex-sans), "Segoe UI", system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  --color-paper: #f2efe7;
+  --color-surface: #fdfbf6;
+  --color-ink: #171c18;
+  --color-ink-2: #4c544e;
+  --color-ink-3: #838b85;
+  --color-line: #e3ded1;
+  --color-line-soft: #eee9de;
+
+  --color-forest: #143a2b;
+  --color-forest-hi: #1d5540;
+  --color-clay: #b4552f;
+  --color-clay-soft: #f7ebe3;
+  --color-moss: #3f7355;
+  --color-moss-soft: #e7f0e8;
+  --color-ember: #a34428;
+  --color-ember-soft: #f9e8e1;
+  --color-sand: #d8cfba;
 }
 
 * { box-sizing: border-box; }
 
-html { background: #f5f3ec; }
+html {
+  background: var(--color-paper);
+  -webkit-text-size-adjust: 100%;
+}
 
 body {
   margin: 0;
-  color: #17211b;
+  color: var(--color-ink);
   background:
-    radial-gradient(circle at 88% 8%, rgba(185, 245, 211, .48), transparent 24rem),
-    linear-gradient(180deg, #fbfaf6 0%, #f2f0e8 100%);
-  font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+    radial-gradient(60rem 32rem at 100% -8%, rgba(20, 58, 43, .07), transparent 70%),
+    radial-gradient(44rem 26rem at -10% 0%, rgba(180, 85, 47, .06), transparent 70%),
+    var(--color-paper);
+  background-attachment: fixed;
+  font-family: var(--font-sans);
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
 }
 
-button, input, select { font: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
 
-::selection { background: #b9f5d3; color: #173d2b; }
+/* Tabular figures everywhere numbers are compared down a column. */
+.nums { font-variant-numeric: tabular-nums; }
 
-:focus-visible { outline: 3px solid rgba(241, 112, 85, .45); outline-offset: 2px; }
+::selection { background: #d7e6da; color: var(--color-forest); }
+
+:focus-visible {
+  outline: 2px solid var(--color-forest);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Native select: keep the accessible control, replace only the chrome. */
+.control-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%234c544e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .75rem center;
+  padding-right: 2rem;
+}
+
+/* Thin, unobtrusive scrollbar for the table's horizontal overflow. */
+.scroll-x { scrollbar-width: thin; scrollbar-color: var(--color-sand) transparent; }
+.scroll-x::-webkit-scrollbar { height: 8px; }
+.scroll-x::-webkit-scrollbar-thumb { background: var(--color-sand); border-radius: 99px; }
+.scroll-x::-webkit-scrollbar-track { background: transparent; }
+
+@keyframes indeterminate {
+  0% { transform: translateX(-100%) scaleX(.35); }
+  100% { transform: translateX(300%) scaleX(.35); }
+}
+.bar-indeterminate { animation: indeterminate 1.15s cubic-bezier(.4, 0, .2, 1) infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

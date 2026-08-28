@@ -3,7 +3,7 @@ import type { Locator, Page } from "@playwright/test";
 export class MentionsPage {
   constructor(private page: Page) {}
   async goto() { await this.page.goto("/"); }
-  heading(): Locator { return this.page.getByRole("heading", { name: /Know when your brand enters/i }); }
+  heading(): Locator { return this.page.getByRole("heading", { name: /Brand visibility across AI answers/i }); }
   modelSelect(): Locator { return this.page.getByLabel("Model", { exact: true }); }
   sentimentSelect(): Locator { return this.page.getByLabel("Sentiment", { exact: true }); }
   fromInput(): Locator { return this.page.getByLabel("From", { exact: true }); }
@@ -14,4 +14,6 @@ export class MentionsPage {
   nextButton(): Locator { return this.page.getByRole("button", { name: "Next page" }); }
   retryButton(): Locator { return this.page.getByRole("button", { name: "Try again" }); }
   table(): Locator { return this.page.getByRole("table"); }
+  perPageSelect(): Locator { return this.page.getByLabel("Rows per page"); }
+  filterChip(name: string): Locator { return this.page.getByRole("button", { name: `Remove ${name} filter` }); }
 }

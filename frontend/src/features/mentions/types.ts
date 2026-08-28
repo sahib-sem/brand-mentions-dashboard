@@ -9,6 +9,8 @@ export interface MentionFilters {
   date_to?: string;
 }
 
+export const PER_PAGE_OPTIONS = [25, 50, 100] as const;
+
 export interface MentionsRequest {
   page: number;
   per_page: number;
@@ -33,11 +35,7 @@ export interface MentionsResponse {
   per_page: number;
 }
 
-export interface TrendsRequest {
-  date_from?: string;
-  date_to?: string;
-  group_by: GroupBy;
-}
+export type TrendsRequest = MentionFilters & { group_by: GroupBy };
 
 export interface TrendPoint { date: string; total: number; mentioned: number; }
 export interface TrendsResponse { data: TrendPoint[]; }

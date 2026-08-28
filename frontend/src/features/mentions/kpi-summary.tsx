@@ -1,31 +1,85 @@
-import { Activity, Eye, Gauge, Sparkles } from "lucide-react";
 import { Card } from "@/shared/ui/card";
 import type { TrendPoint } from "./types";
 
-export function KpiSummary({ trends }: { trends: TrendPoint[] }) {
-  const total = trends.reduce((sum, point) => sum + point.total, 0);
-  const mentioned = trends.reduce((sum, point) => sum + point.mentioned, 0);
-  const rate = total ? Math.round((mentioned / total) * 100) : 0;
-  const average = trends.length ? Math.round(mentioned / trends.length) : 0;
-  const peak = trends.reduce((best, point) => point.mentioned > best.mentioned ? point : best, { date: "", total: 0, mentioned: 0 });
-  const cards = [
-    { label: "Responses tracked", value: total.toLocaleString(), note: `${trends.length} reporting periods`, icon: Activity, tone: "bg-[#e9f8ef] text-[#1f7046]" },
-    { label: "Brand mentions", value: mentioned.toLocaleString(), note: "Explicit brand appearances", icon: Eye, tone: "bg-[#fff0eb] text-[#b64e37]" },
-    { label: "Visibility rate", value: `${rate}%`, note: "Share of tracked responses", icon: Gauge, tone: "bg-[#edf1ff] text-[#5266af]" },
-    { label: "Average signal", value: average.toLocaleString(), note: peak.date ? `Peak: ${formatShortDate(peak.date)}` : "No peak yet", icon: Sparkles, tone: "bg-[#fff7dc] text-[#9b7118]" },
-  ];
-
-  return <section aria-label="Visibility summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">{cards.map(({ label, value, note, icon: Icon, tone }) => (
-    <Card key={label} className="p-4 sm:p-5">
-      <div className={`mb-4 grid size-9 place-items-center rounded-xl ${tone}`}><Icon size={18} aria-hidden="true" /></div>
-      <p className="text-[.68rem] font-bold uppercase tracking-[.14em] text-[#6b746e]">{label}</p>
-      <p className="mt-1 font-display text-2xl font-extrabold tracking-tight sm:text-3xl">{value}</p>
-      <p className="mt-1 truncate text-xs text-[#79817c]">{note}</p>
-    </Card>
-  ))}</section>;
+interface Metric {
+  label: string;
+  value: string;
+  note: string;
+  meter?: number;
 }
 
-function formatShortDate(value: string) {
-  const date = new Date(`${value}T00:00:00`);
-  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat("en", { month: "short", day: "numeric", timeZone: "UTC" }).format(date);
+export function KpiSummary({ trends, groupBy }: { trends: TrendPoint[]; groupBy: string }) {
+  const total = trends.reduce((sum, point) => sum + point.total, 0);
+  const mentioned = trends.reduce((sum, point) => sum + point.mentioned, 0);
+  const rate = total ? (mentioned / total) * 100 : 0;
+  const peak = trends.reduce((best, point) => (point.mentioned > best.mentioned ? point : best), {
+    date: "",
+    total: 0,
+    mentioned: 0,
+  });
+  const bucket = groupBy === "week" ? "week" : "day";
+
+  const metrics: Metric[] = [
+    {
+      label: "Responses tracked",
+      value: total.toLocaleString(),
+      note: `${trends.length.toLocaleString()} ${bucket}${trends.length === 1 ? "" : "s"} with activity`,
+    },
+    {
+      label: "Brand mentions",
+      value: mentioned.toLocaleString(),
+      note: `${(total - mentioned).toLocaleString()} answers without the brand`,
+    },
+    {
+      label: "Visibility rate",
+      value: `${rate.toFixed(1)}%`,
+      note: "Share of answers naming the brand",
+      meter: rate,
+    },
+    {
+      label: `Best ${bucket}`,
+      value: peak.date ? peak.mentioned.toLocaleString() : "—",
+      note: peak.date
+        ? `${formatDate(peak.date)} · ${peak.total.toLocaleString()} answers`
+        : "No activity yet",
+    },
+  ];
+
+  return (
+    <Card className="overflow-hidden">
+      <div className="grid grid-cols-2 gap-px bg-line-soft lg:grid-cols-4">
+        {metrics.map((metric) => (
+          <section key={metric.label} aria-label={metric.label} className="bg-surface p-4 sm:p-5">
+            <p className="font-mono text-[.65rem] font-medium uppercase tracking-[.13em] text-ink-3">
+              {metric.label}
+            </p>
+            <p className="mt-2 font-display text-[2rem] font-semibold leading-none tracking-[-.02em] sm:text-[2.4rem]">
+              {metric.value}
+            </p>
+            {metric.meter === undefined ? null : (
+              <div
+                className="mt-3 h-1 w-full overflow-hidden rounded-full bg-line-soft"
+                aria-hidden="true"
+              >
+                <div
+                  className="h-full rounded-full bg-clay transition-[width] duration-500"
+                  style={{ width: `${Math.min(100, metric.meter)}%` }}
+                />
+              </div>
+            )}
+            <p className={`text-xs text-ink-3 ${metric.meter === undefined ? "mt-3" : "mt-2"}`}>
+              {metric.note}
+            </p>
+          </section>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function formatDate(value: string) {
+  const date = new Date(`${value}T00:00:00Z`);
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat("en", { month: "short", day: "numeric", timeZone: "UTC" }).format(date);
 }

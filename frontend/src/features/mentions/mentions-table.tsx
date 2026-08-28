@@ -1,49 +1,232 @@
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { Button } from "@/shared/ui/button";
-import { Card } from "@/shared/ui/card";
-import type { Mention } from "./types";
+import { Card, SectionHeading } from "@/shared/ui/card";
+import { Select } from "@/shared/ui/field";
+import { PER_PAGE_OPTIONS, type Mention } from "./types";
 
-interface MentionsTableProps { mentions: Mention[]; page: number; perPage: number; total: number; onPageChange: (page: number) => void; isRefreshing: boolean; }
+interface MentionsTableProps {
+  mentions: Mention[];
+  page: number;
+  perPage: number;
+  total: number;
+  onPageChange: (page: number) => void;
+  onPerPageChange: (perPage: number) => void;
+  isRefreshing: boolean;
+}
 
-export function MentionsTable({ mentions, page, perPage, total, onPageChange, isRefreshing }: MentionsTableProps) {
+const HEAD = "px-4 py-2.5 font-mono text-[.65rem] font-medium uppercase tracking-[.12em] text-ink-3";
+
+export function MentionsTable({
+  mentions,
+  page,
+  perPage,
+  total,
+  onPageChange,
+  onPerPageChange,
+  isRefreshing,
+}: MentionsTableProps) {
   const pages = Math.max(1, Math.ceil(total / perPage));
   const start = total ? (page - 1) * perPage + 1 : 0;
   const end = Math.min(page * perPage, total);
-  return <Card className="overflow-hidden">
-    <div className="flex flex-wrap items-end justify-between gap-2 border-b border-black/7 px-4 py-5 sm:px-6">
-      <div><p className="text-xs font-bold uppercase tracking-[.14em] text-coral">Mention explorer</p><h2 className="font-display text-xl font-extrabold sm:text-2xl">Every response, in context</h2></div>
-      <p className="text-xs font-medium text-[#717a74]" aria-live="polite">{total.toLocaleString()} results</p>
-    </div>
-    <div className="overflow-x-auto" aria-busy={isRefreshing}>
-      <table className={`w-full min-w-[1050px] border-collapse text-left text-sm transition-opacity ${isRefreshing ? "opacity-55" : ""}`}>
-        <thead className="bg-[#f4f6f2] text-[.67rem] uppercase tracking-[.1em] text-[#67716a]"><tr>
-          <th className="px-6 py-3 font-bold">Query</th><th className="px-4 py-3 font-bold">Model</th><th className="px-4 py-3 font-bold">Mentioned</th><th className="px-4 py-3 font-bold">Position</th><th className="px-4 py-3 font-bold">Sentiment</th><th className="px-4 py-3 font-bold">Citation</th><th className="px-6 py-3 font-bold">Date</th>
-        </tr></thead>
-        <tbody>{mentions.map((mention) => <tr key={mention.id} className="border-t border-black/6 hover:bg-[#fbfcfa]">
-          <td className="max-w-[330px] px-6 py-4 font-semibold"><span className="line-clamp-2">{mention.query_text}</span></td>
-          <td className="px-4 py-4"><span className="rounded-lg bg-[#edf1ee] px-2.5 py-1 text-xs font-bold capitalize text-[#465149]">{mention.model}</span></td>
-          <td className="px-4 py-4"><span className={`inline-flex items-center gap-1.5 text-xs font-bold ${mention.mentioned ? "text-[#26764b]" : "text-[#818a84]"}`}><i className={`size-2 rounded-full ${mention.mentioned ? "bg-[#35a86b]" : "bg-[#b6bdb8]"}`} />{mention.mentioned ? "Yes" : "No"}</span></td>
-          <td className="px-4 py-4 tabular-nums text-[#5f6862]">{mention.position ?? "-"}</td>
-          <td className="px-4 py-4"><Sentiment value={mention.sentiment} /></td>
-          <td className="max-w-[180px] px-4 py-4">{mention.citation_url ? <a className="inline-flex max-w-full items-center gap-1 text-xs font-bold text-[#356a50] hover:underline" href={mention.citation_url} target="_blank" rel="noreferrer"><span className="truncate">View source</span><ExternalLink size={12} aria-hidden="true" /></a> : <span className="text-[#949b96]">-</span>}</td>
-          <td className="whitespace-nowrap px-6 py-4 text-xs text-[#626b65]">{formatDate(mention.created_at)}</td>
-        </tr>)}</tbody>
-      </table>
-    </div>
-    <div className="flex items-center justify-between gap-3 border-t border-black/7 px-4 py-4 sm:px-6">
-      <p className="text-xs text-[#717a74]">Showing <strong className="text-ink">{start}-{end}</strong> of <strong className="text-ink">{total.toLocaleString()}</strong></p>
-      <div className="flex items-center gap-2"><Button variant="secondary" className="size-10 p-0" aria-label="Previous page" disabled={page <= 1 || isRefreshing} onClick={() => onPageChange(page - 1)}><ChevronLeft size={17} /></Button><span className="min-w-20 text-center text-xs font-bold">{page} / {pages}</span><Button variant="secondary" className="size-10 p-0" aria-label="Next page" disabled={page >= pages || isRefreshing} onClick={() => onPageChange(page + 1)}><ChevronRight size={17} /></Button></div>
-    </div>
-  </Card>;
+
+  return (
+    <Card className="overflow-hidden">
+      <div className="border-b border-line px-4 py-4 sm:px-6 sm:py-5">
+        <SectionHeading eyebrow="Mention explorer" title="Every answer, in context">
+          <p className="nums text-sm text-ink-3" aria-live="polite">
+            <strong className="font-semibold text-ink">{total.toLocaleString()}</strong> matching
+            {total === 1 ? " answer" : " answers"}
+          </p>
+        </SectionHeading>
+      </div>
+
+      <div className="scroll-x relative max-h-[70vh] overflow-auto" aria-busy={isRefreshing}>
+        {isRefreshing && (
+          <div className="sticky top-0 z-20 h-0.5 w-full overflow-hidden bg-transparent">
+            <div className="bar-indeterminate h-full w-full bg-clay" />
+          </div>
+        )}
+        <table className="w-full min-w-[980px] border-collapse text-left text-sm">
+          <caption className="sr-only">
+            Brand mentions matching the current filters, newest first.
+          </caption>
+          <thead className="sticky top-0 z-10 bg-paper/95 backdrop-blur">
+            <tr className="border-b border-line">
+              <th scope="col" className={`${HEAD} pl-5 sm:pl-6`}>
+                Query
+              </th>
+              <th scope="col" className={HEAD}>
+                Model
+              </th>
+              <th scope="col" className={HEAD}>
+                Mentioned
+              </th>
+              <th scope="col" className={`${HEAD} text-right`}>
+                Position
+              </th>
+              <th scope="col" className={HEAD}>
+                Sentiment
+              </th>
+              <th scope="col" className={HEAD}>
+                Citation
+              </th>
+              <th scope="col" className={`${HEAD} pr-5 text-right sm:pr-6`}>
+                Date
+              </th>
+            </tr>
+          </thead>
+          <tbody className={`transition-opacity duration-200 ${isRefreshing ? "opacity-60" : ""}`}>
+            {mentions.map((mention) => (
+              <tr key={mention.id} className="border-b border-line-soft last:border-0 hover:bg-paper/70">
+                <td className="max-w-[340px] py-3 pl-5 pr-4 sm:pl-6">
+                  <span className="block truncate font-medium text-ink" title={mention.query_text}>
+                    {mention.query_text}
+                  </span>
+                  <span className="font-mono text-[.68rem] text-ink-3">{mention.id}</span>
+                </td>
+                <td className="px-4 py-3">
+                  <span className="rounded-md border border-line bg-white px-2 py-0.5 text-xs font-medium capitalize text-ink-2">
+                    {mention.model}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  {mention.mentioned ? (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-moss">
+                      <i className="h-1.5 w-1.5 rounded-full bg-moss" aria-hidden="true" />
+                      Yes
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-3">
+                      <i className="h-1.5 w-1.5 rounded-full bg-sand" aria-hidden="true" />
+                      No
+                    </span>
+                  )}
+                </td>
+                <td className="nums px-4 py-3 text-right font-mono text-[.8rem] text-ink-2">
+                  {mention.position === null ? <Empty /> : `#${mention.position}`}
+                </td>
+                <td className="px-4 py-3">
+                  <SentimentTag value={mention.sentiment} />
+                </td>
+                <td className="max-w-[190px] px-4 py-3">
+                  {mention.citation_url ? (
+                    <a
+                      className="inline-flex max-w-full items-center gap-1 text-xs font-medium text-forest underline decoration-line underline-offset-4 hover:decoration-forest"
+                      href={mention.citation_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={mention.citation_url}
+                    >
+                      <span className="truncate">{hostname(mention.citation_url)}</span>
+                      <ExternalLink size={11} aria-hidden="true" className="shrink-0" />
+                    </a>
+                  ) : (
+                    <Empty />
+                  )}
+                </td>
+                <td className="nums whitespace-nowrap py-3 pl-4 pr-5 text-right font-mono text-[.8rem] text-ink-2 sm:pr-6">
+                  {formatDate(mention.created_at)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-3 sm:px-6">
+        <div className="flex items-center gap-3">
+          <p className="nums text-xs text-ink-3">
+            <strong className="font-semibold text-ink-2">
+              {start.toLocaleString()}–{end.toLocaleString()}
+            </strong>{" "}
+            of {total.toLocaleString()}
+          </p>
+          <label className="flex items-center gap-2 text-xs text-ink-3">
+            <span className="sr-only sm:not-sr-only">Rows</span>
+            <Select
+              aria-label="Rows per page"
+              className="h-8 w-[4.75rem] py-0 text-xs"
+              value={perPage}
+              onChange={(event) => onPerPageChange(Number(event.target.value))}
+            >
+              {PER_PAGE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </Select>
+          </label>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Button
+            variant="secondary"
+            className="h-9 w-9 p-0"
+            aria-label="Previous page"
+            disabled={page <= 1}
+            onClick={() => onPageChange(page - 1)}
+          >
+            <ChevronLeft size={16} aria-hidden="true" />
+          </Button>
+          <p className="nums px-2 text-xs text-ink-2">
+            Page <strong className="font-semibold text-ink">{page}</strong> of{" "}
+            {pages.toLocaleString()}
+          </p>
+          <Button
+            variant="secondary"
+            className="h-9 w-9 p-0"
+            aria-label="Next page"
+            disabled={page >= pages}
+            onClick={() => onPageChange(page + 1)}
+          >
+            <ChevronRight size={16} aria-hidden="true" />
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
 }
 
-function Sentiment({ value }: { value: string | null }) {
-  if (!value) return <span className="text-[#949b96]">-</span>;
-  const colors: Record<string, string> = { positive: "bg-[#e4f6eb] text-[#277148]", neutral: "bg-[#eef0ee] text-[#606963]", negative: "bg-[#ffebe6] text-[#a94935]" };
-  return <span className={`rounded-full px-2.5 py-1 text-xs font-bold capitalize ${colors[value] ?? colors.neutral}`}>{value}</span>;
+const TONES: Record<string, string> = {
+  positive: "bg-moss-soft text-moss",
+  neutral: "bg-line-soft text-ink-2",
+  negative: "bg-ember-soft text-ember",
+};
+
+function SentimentTag({ value }: { value: string | null }) {
+  if (!value) return <Empty />;
+  return (
+    <span
+      className={`rounded-md px-2 py-0.5 text-xs font-medium capitalize ${TONES[value] ?? TONES.neutral}`}
+    >
+      {value}
+    </span>
+  );
+}
+
+function Empty() {
+  return (
+    <span className="text-ink-3" aria-label="Not available">
+      —
+    </span>
+  );
+}
+
+function hostname(url: string) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
 }
 
 function formatDate(value: string) {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(date);
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat("en", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        timeZone: "UTC",
+      }).format(date);
 }

@@ -119,10 +119,16 @@ Set `NEXT_PUBLIC_API_URL` for the deployed API URL. Set the backend
 
 ```bash
 make check              # Ruff, Pyright, ESLint, TypeScript
-make test-api           # 19 database-backed API behavior tests
-make test-web           # 5 Playwright dashboard behavior tests
+make test-api           # 21 database-backed API behavior tests
+make test-web           # 6 Playwright dashboard behavior tests
 make build              # Next.js production build
 ```
+
+### Contract note
+
+`POST /mentions/trends` additionally accepts optional `model` and `sentiment`, so the chart can be
+scoped by the same filters as the table. Both are optional — the documented request shape above is
+unchanged. See `NOTES.md`.
 
 ### Implementation structure
 

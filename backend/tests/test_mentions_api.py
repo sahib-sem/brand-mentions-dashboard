@@ -139,3 +139,22 @@ async def test_returns_empty_trends(client: AsyncClient) -> None:
         response = await client.post("/mentions/trends", json={"date_from": "2030-01-01"})
     with step("Then", "an empty trend is returned"):
         assert response.json() == {"data": []}
+
+
+@pytest.mark.asyncio
+async def test_scopes_trends_by_model_and_sentiment(client: AsyncClient) -> None:
+    with step("When", "trends are requested for one model and sentiment"):
+        response = await client.post(
+            "/mentions/trends", json={"model": "chatgpt", "sentiment": "positive"}
+        )
+    with step("Then", "only the matching records are aggregated"):
+        assert response.status_code == 200
+        assert response.json() == {"data": [{"date": "2025-01-01", "total": 1, "mentioned": 1}]}
+
+
+@pytest.mark.asyncio
+async def test_rejects_unknown_trend_dimensions(client: AsyncClient) -> None:
+    with step("When", "trends are requested with an unsupported model"):
+        response = await client.post("/mentions/trends", json={"model": "grok"})
+    with step("Then", "FastAPI reports a validation error"):
+        assert response.status_code == 422

@@ -1,12 +1,22 @@
 import type { ButtonHTMLAttributes } from "react";
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "ghost" };
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "primary" | "secondary" | "ghost";
+};
+
+const variants = {
+  primary:
+    "bg-forest text-[#f4f2ea] hover:bg-forest-hi active:bg-forest shadow-[0_1px_2px_rgba(20,58,43,.3)]",
+  secondary:
+    "border border-line bg-surface text-ink-2 hover:border-ink-3 hover:text-ink hover:bg-white",
+  ghost: "text-ink-2 hover:bg-line-soft hover:text-ink",
+} as const;
 
 export function Button({ className = "", variant = "primary", ...props }: ButtonProps) {
-  const variants = {
-    primary: "bg-forest text-white hover:bg-[#24563e] shadow-[0_5px_14px_rgba(23,61,43,.18)]",
-    secondary: "border border-[#c9cec8] bg-white text-ink hover:border-forest hover:bg-[#f8faf8]",
-    ghost: "text-forest hover:bg-[#e8eee9]",
-  };
-  return <button className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-45 ${variants[variant]} ${className}`} {...props} />;
+  return (
+    <button
+      className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-lg px-3.5 text-sm font-semibold transition-colors duration-150 disabled:pointer-events-none disabled:opacity-40 ${variants[variant]} ${className}`}
+      {...props}
+    />
+  );
 }

@@ -30,7 +30,7 @@ test("applies, resets, and preserves filters in pagination request payloads", as
     const trendsRequest = page.waitForRequest((request) => request.url().endsWith("/mentions/trends") && request.postDataJSON().group_by === "week");
     await dashboard.applyButton().click();
     await expect((await mentionsRequest).postDataJSON()).toEqual({ page: 1, per_page: 25, filters: { model: "claude", sentiment: "positive", date_from: "2025-02-01", date_to: "2025-02-28" } });
-    await expect((await trendsRequest).postDataJSON()).toEqual({ date_from: "2025-02-01", date_to: "2025-02-28", group_by: "week" });
+    await expect((await trendsRequest).postDataJSON()).toEqual({ model: "claude", sentiment: "positive", date_from: "2025-02-01", date_to: "2025-02-28", group_by: "week" });
   });
   await test.step("Then pagination uses the applied mention filters", async () => {
     const requestPromise = page.waitForRequest((request) => request.url().endsWith("/mentions") && request.postDataJSON().page === 2);
@@ -44,7 +44,7 @@ test("applies, resets, and preserves filters in pagination request payloads", as
     await expect(dashboard.fromInput()).toHaveValue("");
     await expect(dashboard.toInput()).toHaveValue("");
     await expect(dashboard.groupSelect()).toHaveValue("day");
-    await expect(page.getByText("1 / 3")).toBeVisible();
+    await expect(page.getByText("Page 1 of 3")).toBeVisible();
   });
 });
 
@@ -78,5 +78,29 @@ test("keeps core controls usable on a mobile viewport", async ({ page }) => {
     await expect(dashboard.table()).toBeVisible();
     const overflow = await dashboard.table().evaluate((table) => table.parentElement ? table.scrollWidth > table.parentElement.clientWidth : false);
     expect(overflow).toBe(true);
+  });
+});
+
+test("removes a single filter from the active chips and resizes the page", async ({ page }) => {
+  const data = new MentionsDataSupport(page);
+  const dashboard = new MentionsPage(page);
+  await test.step("Given a dashboard filtered to one model", async () => {
+    await data.interceptDashboard();
+    await dashboard.goto();
+    await dashboard.modelSelect().selectOption("gemini");
+    await dashboard.applyButton().click();
+    await expect(dashboard.filterChip("Model")).toBeVisible();
+  });
+  await test.step("When the model chip is dismissed", async () => {
+    await dashboard.filterChip("Model").click();
+  });
+  await test.step("Then the filter clears from both the chip row and the control", async () => {
+    await expect(dashboard.filterChip("Model")).toHaveCount(0);
+    await expect(dashboard.modelSelect()).toHaveValue("");
+  });
+  await test.step("When a larger page size is chosen", async () => {
+    const request = page.waitForRequest((r) => r.url().endsWith("/mentions") && r.postDataJSON().per_page === 100);
+    await dashboard.perPageSelect().selectOption("100");
+    await expect((await request).postDataJSON()).toMatchObject({ page: 1, per_page: 100 });
   });
 });
