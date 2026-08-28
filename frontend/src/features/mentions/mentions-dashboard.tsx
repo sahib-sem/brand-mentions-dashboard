@@ -52,6 +52,7 @@ export function MentionsDashboard() {
   const initialLoading = !mentions.data && !trends.data && (mentions.isPending || trends.isPending);
   const failed = Boolean(mentions.error || trends.error);
   const refreshing = mentions.isFetching || trends.isFetching;
+  const applyingFilters = trends.isFetching && trends.data !== undefined;
   const noResults =
     mentions.data?.data.length === 0 && trends.data?.data.length === 0 && !refreshing;
 
@@ -91,7 +92,7 @@ export function MentionsDashboard() {
             onApply={apply}
             onReset={reset}
             onRemove={removeFilter}
-            isRefreshing={refreshing}
+            isRefreshing={applyingFilters}
           />
 
           {initialLoading ? (
