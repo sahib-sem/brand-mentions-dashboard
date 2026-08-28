@@ -1,6 +1,6 @@
 # Notes
 
-**Time spent:** Approximately 3 hours 15 minutes, from receiving repository access at 09:20 EAT through final review and deployment fixes at 12:35 EAT.
+**Time spent:** Approximately 3 hours.
 
 ## Assumptions
 
