@@ -2,7 +2,10 @@ import type { z } from "zod";
 import { mentionsResponseSchema, trendsResponseSchema } from "./schemas";
 import type { MentionsRequest, TrendsRequest } from "./types";
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const DEFAULT_API_URL = process.env.NODE_ENV === "production"
+  ? "https://aiclicks-brand-mentions-api.onrender.com"
+  : "http://localhost:8000";
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL).replace(/\/$/, "");
 
 async function post<TSchema extends z.ZodType>(path: string, body: unknown, schema: TSchema): Promise<z.infer<TSchema>> {
   const response = await fetch(`${API_URL}${path}`, {
