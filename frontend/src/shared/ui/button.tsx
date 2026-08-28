@@ -15,7 +15,7 @@ const variants = {
 export function Button({ className = "", variant = "primary", ...props }: ButtonProps) {
   return (
     <button
-      className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-lg px-3.5 text-sm font-semibold transition-colors duration-150 disabled:pointer-events-none disabled:opacity-40 ${variants[variant]} ${className}`}
+      className={`inline-flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3.5 text-sm font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40 ${variants[variant]} ${className}`}
       {...props}
     />
   );

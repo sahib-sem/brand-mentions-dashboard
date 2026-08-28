@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Card, SectionHeading } from "@/shared/ui/card";
 import { Select } from "@/shared/ui/field";
@@ -32,7 +32,7 @@ export function MentionsTable({
   return (
     <Card className="overflow-hidden">
       <div className="border-b border-line px-4 py-4 sm:px-6 sm:py-5">
-        <SectionHeading eyebrow="Mention explorer" title="Every answer, in context">
+        <SectionHeading eyebrow="Records" title="Mention details">
           <p className="nums text-sm text-ink-3" aria-live="polite">
             <strong className="font-semibold text-ink">{total.toLocaleString()}</strong> matching
             {total === 1 ? " answer" : " answers"}
@@ -40,13 +40,21 @@ export function MentionsTable({
         </SectionHeading>
       </div>
 
-      <div className="scroll-x relative max-h-[70vh] overflow-auto" aria-busy={isRefreshing}>
+      <div className="relative" aria-busy={isRefreshing}>
         {isRefreshing && (
-          <div className="sticky top-0 z-20 h-0.5 w-full overflow-hidden bg-transparent">
+          <div className="absolute inset-x-0 top-0 z-20 h-0.5 overflow-hidden bg-transparent">
             <div className="bar-indeterminate h-full w-full bg-clay" />
           </div>
         )}
-        <table className="w-full min-w-[980px] border-collapse text-left text-sm">
+        <div
+          className={`divide-y divide-line-soft transition-opacity duration-200 md:hidden ${isRefreshing ? "opacity-60" : ""}`}
+        >
+          {mentions.map((mention) => (
+            <MobileMention key={mention.id} mention={mention} />
+          ))}
+        </div>
+        <div className="scroll-x hidden max-h-[70vh] overflow-auto md:block">
+          <table className="w-full min-w-[980px] border-collapse text-left text-sm">
           <caption className="sr-only">
             Brand mentions matching the current filters, newest first.
           </caption>
@@ -130,10 +138,11 @@ export function MentionsTable({
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-3 sm:px-6">
+      <div className="flex flex-col gap-3 border-t border-line px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div className="flex items-center gap-3">
           <p className="nums text-xs text-ink-3">
             <strong className="font-semibold text-ink-2">
@@ -157,7 +166,7 @@ export function MentionsTable({
             </Select>
           </label>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center justify-between gap-1.5 sm:justify-start">
           <Button
             variant="secondary"
             className="h-11 w-11 cursor-pointer p-0"
@@ -183,6 +192,80 @@ export function MentionsTable({
         </div>
       </div>
     </Card>
+  );
+}
+
+function MobileMention({ mention }: { mention: Mention }) {
+  return (
+    <article className="p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="line-clamp-2 text-sm font-semibold leading-5 text-ink">
+            {mention.query_text}
+          </h3>
+          <p className="nums mt-1 text-xs text-ink-3">{formatDate(mention.created_at)}</p>
+        </div>
+        <span className="shrink-0 rounded-md border border-line bg-paper px-2 py-0.5 text-xs font-medium capitalize text-ink-2">
+          {mention.model}
+        </span>
+      </div>
+
+      <div className="mt-3 flex items-center gap-3">
+        {mention.mentioned ? (
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-moss">
+            <i className="h-1.5 w-1.5 rounded-full bg-moss" aria-hidden="true" />
+            Mentioned
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 text-xs text-ink-3">
+            <i className="h-1.5 w-1.5 rounded-full bg-sand" aria-hidden="true" />
+            Not mentioned
+          </span>
+        )}
+        <SentimentTag value={mention.sentiment} />
+      </div>
+
+      <details className="group mt-3">
+        <summary className="flex cursor-pointer list-none items-center gap-1 text-xs font-semibold text-forest">
+          View details
+          <ChevronDown
+            size={15}
+            aria-hidden="true"
+            className="transition-transform group-open:rotate-180"
+          />
+        </summary>
+        <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 rounded-lg bg-paper p-3 text-xs">
+          <div>
+            <dt className="text-ink-3">Position</dt>
+            <dd className="nums mt-0.5 font-medium text-ink">
+              {mention.position === null ? "Not available" : `#${mention.position}`}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-ink-3">Record ID</dt>
+            <dd className="mt-0.5 truncate font-mono text-ink">{mention.id}</dd>
+          </div>
+          <div className="col-span-2">
+            <dt className="text-ink-3">Citation</dt>
+            <dd className="mt-0.5">
+              {mention.citation_url ? (
+                <a
+                  className="inline-flex max-w-full items-center gap-1 font-medium text-forest underline underline-offset-4"
+                  href={mention.citation_url}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <span className="truncate">{hostname(mention.citation_url)}</span>
+                  <ExternalLink size={12} aria-hidden="true" className="shrink-0" />
+                </a>
+              ) : (
+                "Not available"
+              )}
+            </dd>
+          </div>
+        </dl>
+      </details>
+    </article>
   );
 }
 

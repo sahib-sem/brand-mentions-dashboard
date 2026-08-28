@@ -1,16 +1,7 @@
 import type { Metadata } from "next";
-import { Fraunces, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { QueryProvider } from "@/shared/providers/query-provider";
 import "./globals.css";
-
-// Fraunces for headline voice, Plex Sans for interface copy, Plex Mono for
-// figures — one family per job instead of a single catch-all sans.
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  axes: ["SOFT", "WONK", "opsz"],
-  variable: "--font-fraunces",
-  display: "swap",
-});
 
 const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
@@ -27,14 +18,14 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Signaldesk — Brand mentions across AI models",
+  title: "Brand Mentions Dashboard",
   description:
     "Track how often a brand appears in ChatGPT, Claude, Gemini, and Perplexity answers, with sentiment, citations, and visibility trends.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${plexSans.variable} ${plexMono.variable}`}>
+    <html lang="en" className={`${plexSans.variable} ${plexMono.variable}`}>
       <body>
         <a
           href="#dashboard"

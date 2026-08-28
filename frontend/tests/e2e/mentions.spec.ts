@@ -31,6 +31,7 @@ test("applies, resets, and preserves filters in pagination request payloads", as
     await dashboard.applyButton().click();
     await expect((await mentionsRequest).postDataJSON()).toEqual({ page: 1, per_page: 25, filters: { model: "claude", sentiment: "positive", date_from: "2025-02-01", date_to: "2025-02-28" } });
     await expect((await trendsRequest).postDataJSON()).toEqual({ model: "claude", sentiment: "positive", date_from: "2025-02-01", date_to: "2025-02-28", group_by: "week" });
+    await expect(page).toHaveURL(/model=claude.*sentiment=positive.*from=2025-02-01.*to=2025-02-28.*group=week/);
   });
   await test.step("Then pagination uses the applied mention filters", async () => {
     const requestPromise = page.waitForRequest((request) => request.url().endsWith("/mentions") && request.postDataJSON().page === 2);
@@ -71,13 +72,15 @@ test("keeps core controls usable on a mobile viewport", async ({ page }) => {
   const dashboard = new MentionsPage(page);
   await test.step("Given a narrow mobile viewport", async () => { await page.setViewportSize({ width: 390, height: 844 }); await data.interceptDashboard(); });
   await test.step("When the dashboard loads", async () => { await dashboard.goto(); });
-  await test.step("Then filters, summary, and the scrollable table remain accessible", async () => {
+  await test.step("Then filters and prioritized mobile records remain accessible", async () => {
     await expect(dashboard.heading()).toBeVisible();
+    await dashboard.filterToggle().click();
     await expect(dashboard.modelSelect()).toBeVisible();
     await expect(dashboard.applyButton()).toBeVisible();
-    await expect(dashboard.table()).toBeVisible();
-    const overflow = await dashboard.table().evaluate((table) => table.parentElement ? table.scrollWidth > table.parentElement.clientWidth : false);
-    expect(overflow).toBe(true);
+    await expect(dashboard.table()).toBeHidden();
+    await expect(dashboard.mobileRecords().first()).toBeVisible();
+    await dashboard.mobileRecords().first().getByText("View details").click();
+    await expect(dashboard.mobileRecords().first().getByText("Position")).toBeVisible();
   });
 });
 

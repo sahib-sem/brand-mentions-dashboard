@@ -12,8 +12,8 @@ import {
 import { Card, SectionHeading } from "@/shared/ui/card";
 import type { GroupBy, TrendPoint } from "./types";
 
-const TOTAL = "#c9c0a9";
-const MENTIONED = "#b4552f";
+const TOTAL = "#98a2b3";
+const MENTIONED = "#1570ef";
 
 export function TrendChart({
   data,
@@ -28,7 +28,7 @@ export function TrendChart({
 
   return (
     <Card className="min-w-0 p-4 sm:p-6">
-      <SectionHeading eyebrow="Visibility trend" title="Share of the conversation">
+      <SectionHeading eyebrow="Trend" title="Mentions over time">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-2">
           <Swatch color={TOTAL} label="All answers" />
           <Swatch color={MENTIONED} label="Brand mentioned" />
@@ -54,7 +54,7 @@ export function TrendChart({
                   <stop offset="100%" stopColor={MENTIONED} stopOpacity={0.02} />
                 </linearGradient>
               </defs>
-              <CartesianGrid stroke="#e8e3d7" strokeDasharray="2 6" vertical={false} />
+              <CartesianGrid stroke="#eaecf0" strokeDasharray="2 6" vertical={false} />
               <XAxis
                 dataKey="date"
                 tickFormatter={format}
@@ -72,7 +72,7 @@ export function TrendChart({
                 tickLine={false}
               />
               <Tooltip
-                cursor={{ stroke: "#b4552f", strokeWidth: 1, strokeDasharray: "3 3" }}
+                cursor={{ stroke: MENTIONED, strokeWidth: 1, strokeDasharray: "3 3" }}
                 content={<TrendTooltip format={format} />}
               />
               <Area
@@ -92,7 +92,7 @@ export function TrendChart({
                 stroke={MENTIONED}
                 strokeWidth={2}
                 fill="url(#fillMentioned)"
-                activeDot={{ r: 4, fill: MENTIONED, stroke: "#fdfbf6", strokeWidth: 2 }}
+                activeDot={{ r: 4, fill: MENTIONED, stroke: "#ffffff", strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>

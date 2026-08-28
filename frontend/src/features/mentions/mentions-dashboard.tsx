@@ -1,21 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { Filters, type FilterDraft } from "./filters";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { DATA_END, DATA_START, Filters, type FilterDraft } from "./filters";
 import { useMentionsQuery, useTrendsQuery } from "./hooks";
 import { KpiSummary } from "./kpi-summary";
 import { MentionsTable } from "./mentions-table";
 import { DashboardSkeleton, EmptyState, ErrorState } from "./states";
 import { TrendChart } from "./trend-chart";
-import type { MentionFilters } from "./types";
+import type { GroupBy, MentionFilters, Model, Sentiment } from "./types";
 
 const INITIAL_FILTERS: FilterDraft = { group_by: "day" };
 
 export function MentionsDashboard() {
-  const [draft, setDraft] = useState<FilterDraft>(INITIAL_FILTERS);
-  const [applied, setApplied] = useState<FilterDraft>(INITIAL_FILTERS);
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(25);
+  const searchParams = useSearchParams();
+  const [initialState] = useState(() => parseUrlState(searchParams));
+  const [draft, setDraft] = useState<FilterDraft>(initialState.filters);
+  const [applied, setApplied] = useState<FilterDraft>(initialState.filters);
+  const [page, setPage] = useState(initialState.page);
+  const [perPage, setPerPage] = useState(initialState.perPage);
 
   const { group_by, ...mentionFilters } = applied;
   const mentions = useMentionsQuery(page, perPage, mentionFilters);
@@ -56,32 +59,42 @@ export function MentionsDashboard() {
   const noResults =
     mentions.data?.data.length === 0 && trends.data?.data.length === 0 && !refreshing;
 
+  useEffect(() => {
+    writeUrlState(applied, page, perPage);
+  }, [applied, page, perPage]);
+
+  useEffect(() => {
+    const restoreUrlState = () => {
+      const state = parseUrlState(new URLSearchParams(window.location.search));
+      setDraft(state.filters);
+      setApplied(state.filters);
+      setPage(state.page);
+      setPerPage(state.perPage);
+    };
+    window.addEventListener("popstate", restoreUrlState);
+    return () => window.removeEventListener("popstate", restoreUrlState);
+  }, []);
+
   return (
     <main id="dashboard" className="px-4 pb-16 pt-6 sm:px-6 sm:pt-8 lg:px-10">
       <div className="mx-auto max-w-[1380px]">
-        <header className="mb-8 border-b border-line pb-7">
-          <div className="mb-6 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2.5">
-              <Mark />
-              <span className="font-display text-base font-semibold tracking-[-.01em]">
-                Signaldesk
-              </span>
-            </div>
-            <p className="flex items-center gap-2 font-mono text-[.68rem] uppercase tracking-[.12em] text-ink-3">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-moss opacity-70" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-moss" />
-              </span>
-              Live
+        <header className="mb-6 flex flex-col gap-4 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-[-.02em] sm:text-3xl">Brand mentions</h1>
+            <p className="mt-1.5 max-w-2xl text-sm leading-6 text-ink-2">
+              Visibility, sentiment, ranking, and citations across four AI models.
             </p>
           </div>
-          <h1 className="max-w-3xl font-display text-3xl font-semibold leading-[1.1] tracking-[-.025em] sm:text-[2.9rem]">
-            Brand visibility across AI answers
-          </h1>
-          <p className="mt-3 max-w-2xl text-[.95rem] leading-6 text-ink-2">
-            Every tracked response from ChatGPT, Claude, Gemini, and Perplexity — whether the brand
-            was named, where it ranked, how it was framed, and what was cited.
-          </p>
+          <dl className="flex gap-5 text-xs text-ink-3 sm:text-right">
+            <div>
+              <dt>Dataset</dt>
+              <dd className="mt-0.5 font-medium text-ink-2">Jan 1 - Mar 30, 2025</dd>
+            </div>
+            <div>
+              <dt>Responses</dt>
+              <dd className="nums mt-0.5 font-medium text-ink-2">10,000</dd>
+            </div>
+          </dl>
         </header>
 
         <div className="space-y-4">
@@ -130,20 +143,6 @@ export function MentionsDashboard() {
   );
 }
 
-function Mark() {
-  return (
-    <span
-      className="grid h-8 w-8 place-items-center rounded-lg bg-forest text-[#e9efe9]"
-      aria-hidden="true"
-    >
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="1.8" fill="currentColor" />
-        <path d="M4.4 4.4a5.1 5.1 0 0 0 0 7.2M11.6 4.4a5.1 5.1 0 0 1 0 7.2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-      </svg>
-    </span>
-  );
-}
-
 /** Human summary of the applied filters, shown under the chart title. */
 function describeScope({ group_by, model, sentiment, date_from, date_to }: FilterDraft) {
   const parts = [`${group_by === "week" ? "Weekly" : "Daily"} buckets`];
@@ -154,4 +153,46 @@ function describeScope({ group_by, model, sentiment, date_from, date_to }: Filte
   else if (date_to) parts.push(`through ${date_to}`);
   else parts.push("full history");
   return parts.join(" · ");
+}
+
+const MODELS: Model[] = ["chatgpt", "claude", "gemini", "perplexity"];
+const SENTIMENTS: Sentiment[] = ["positive", "neutral", "negative"];
+
+function parseUrlState(params: { get: (name: string) => string | null }) {
+  const model = params.get("model");
+  const sentiment = params.get("sentiment");
+  const group = params.get("group");
+  const from = params.get("from");
+  const to = params.get("to");
+  const page = Number(params.get("page"));
+  const perPage = Number(params.get("per_page"));
+  const filters: FilterDraft = {
+    group_by: (group === "week" ? "week" : "day") as GroupBy,
+    model: MODELS.includes(model as Model) ? (model as Model) : undefined,
+    sentiment: SENTIMENTS.includes(sentiment as Sentiment) ? (sentiment as Sentiment) : undefined,
+    date_from: validDate(from) ? from ?? undefined : undefined,
+    date_to: validDate(to) ? to ?? undefined : undefined,
+  };
+  return {
+    filters,
+    page: Number.isInteger(page) && page > 0 ? page : 1,
+    perPage: [25, 50, 100].includes(perPage) ? perPage : 25,
+  };
+}
+
+function validDate(value: string | null) {
+  return value !== null && value >= DATA_START && value <= DATA_END;
+}
+
+function writeUrlState(filters: FilterDraft, page: number, perPage: number) {
+  const params = new URLSearchParams();
+  if (filters.model) params.set("model", filters.model);
+  if (filters.sentiment) params.set("sentiment", filters.sentiment);
+  if (filters.date_from) params.set("from", filters.date_from);
+  if (filters.date_to) params.set("to", filters.date_to);
+  if (filters.group_by === "week") params.set("group", "week");
+  if (page > 1) params.set("page", String(page));
+  if (perPage !== 25) params.set("per_page", String(perPage));
+  const query = params.toString();
+  window.history.replaceState(null, "", query ? `?${query}` : window.location.pathname);
 }

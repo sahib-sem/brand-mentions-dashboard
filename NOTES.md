@@ -24,5 +24,5 @@
 
 ## With more time
 
-- Encode filters and sorting in the URL for shareable views, and add CSV export.
+- Add sortable columns and CSV export for deeper analysis.
 - Add a deployed end-to-end smoke test and move the API to persistent, non-sleeping infrastructure.

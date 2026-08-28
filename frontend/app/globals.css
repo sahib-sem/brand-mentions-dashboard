@@ -1,32 +1,27 @@
 @import "tailwindcss";
 
-/*
-  Palette: warm bone paper, deep forest ink, one clay accent.
-  Chosen over a stock neutral/indigo scale so the dashboard reads as a
-  considered editorial surface rather than a default component kit.
-*/
 @theme {
   --font-sans: var(--font-plex-sans), "Segoe UI", system-ui, sans-serif;
-  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-display: var(--font-plex-sans), "Segoe UI", system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
 
-  --color-paper: #f2efe7;
-  --color-surface: #fdfbf6;
-  --color-ink: #171c18;
-  --color-ink-2: #4c544e;
-  --color-ink-3: #838b85;
-  --color-line: #e3ded1;
-  --color-line-soft: #eee9de;
+  --color-paper: #f7f8fa;
+  --color-surface: #ffffff;
+  --color-ink: #182230;
+  --color-ink-2: #475467;
+  --color-ink-3: #667085;
+  --color-line: #d0d5dd;
+  --color-line-soft: #eaecf0;
 
-  --color-forest: #143a2b;
-  --color-forest-hi: #1d5540;
-  --color-clay: #b4552f;
-  --color-clay-soft: #f7ebe3;
-  --color-moss: #3f7355;
-  --color-moss-soft: #e7f0e8;
-  --color-ember: #a34428;
-  --color-ember-soft: #f9e8e1;
-  --color-sand: #d8cfba;
+  --color-forest: #175cd3;
+  --color-forest-hi: #1849a9;
+  --color-clay: #1570ef;
+  --color-clay-soft: #eff8ff;
+  --color-moss: #067647;
+  --color-moss-soft: #ecfdf3;
+  --color-ember: #b42318;
+  --color-ember-soft: #fef3f2;
+  --color-sand: #98a2b3;
 }
 
 * { box-sizing: border-box; }
@@ -39,11 +34,7 @@ html {
 body {
   margin: 0;
   color: var(--color-ink);
-  background:
-    radial-gradient(60rem 32rem at 100% -8%, rgba(20, 58, 43, .07), transparent 70%),
-    radial-gradient(44rem 26rem at -10% 0%, rgba(180, 85, 47, .06), transparent 70%),
-    var(--color-paper);
-  background-attachment: fixed;
+  background: var(--color-paper);
   font-family: var(--font-sans);
   font-synthesis-weight: none;
   -webkit-font-smoothing: antialiased;
@@ -55,7 +46,7 @@ input, select, textarea { font: inherit; color: inherit; }
 /* Tabular figures everywhere numbers are compared down a column. */
 .nums { font-variant-numeric: tabular-nums; }
 
-::selection { background: #d7e6da; color: var(--color-forest); }
+::selection { background: #d1e9ff; color: var(--color-forest-hi); }
 
 :focus-visible {
   outline: 2px solid var(--color-forest);

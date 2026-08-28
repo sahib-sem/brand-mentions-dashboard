@@ -1,4 +1,3 @@
-import { Card } from "@/shared/ui/card";
 import type { TrendPoint } from "./types";
 
 interface Metric {
@@ -37,7 +36,7 @@ export function KpiSummary({ trends, groupBy }: { trends: TrendPoint[]; groupBy:
       meter: rate,
     },
     {
-      label: `Best ${bucket}`,
+      label: `Peak ${bucket}ly mentions`,
       value: peak.date ? peak.mentioned.toLocaleString() : "—",
       note: peak.date
         ? `${formatDate(peak.date)} · ${peak.total.toLocaleString()} answers`
@@ -46,14 +45,14 @@ export function KpiSummary({ trends, groupBy }: { trends: TrendPoint[]; groupBy:
   ];
 
   return (
-    <Card className="overflow-hidden">
+    <div className="overflow-hidden border-y border-line bg-surface">
       <div className="grid grid-cols-2 gap-px bg-line-soft lg:grid-cols-4">
         {metrics.map((metric) => (
           <section key={metric.label} aria-label={metric.label} className="bg-surface p-4 sm:p-5">
             <p className="font-mono text-[.65rem] font-medium uppercase tracking-[.13em] text-ink-3">
               {metric.label}
             </p>
-            <p className="mt-2 font-display text-[2rem] font-semibold leading-none tracking-[-.02em] sm:text-[2.4rem]">
+            <p className="nums mt-2 text-[2rem] font-semibold leading-none tracking-[-.02em] sm:text-[2.25rem]">
               {metric.value}
             </p>
             {metric.meter === undefined ? null : (
@@ -73,7 +72,7 @@ export function KpiSummary({ trends, groupBy }: { trends: TrendPoint[]; groupBy:
           </section>
         ))}
       </div>
-    </Card>
+    </div>
   );
 }
 

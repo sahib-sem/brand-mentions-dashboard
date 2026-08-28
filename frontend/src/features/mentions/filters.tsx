@@ -1,11 +1,14 @@
-import type { FormEvent } from "react";
-import { RotateCcw, SlidersHorizontal, X } from "lucide-react";
+"use client";
+
+import { useState, type FormEvent } from "react";
+import { ChevronDown, RotateCcw, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/shared/ui/button";
-import { Card } from "@/shared/ui/card";
 import { Field, Input, Select } from "@/shared/ui/field";
 import type { GroupBy, MentionFilters, Model, Sentiment } from "./types";
 
 export type FilterDraft = MentionFilters & { group_by: GroupBy };
+export const DATA_START = "2025-01-01";
+export const DATA_END = "2025-03-30";
 
 interface FiltersProps {
   value: FilterDraft;
@@ -35,9 +38,12 @@ export function Filters({
   onRemove,
   isRefreshing,
 }: FiltersProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
   const invalidRange = Boolean(value.date_from && value.date_to && value.date_from > value.date_to);
   const dirty = JSON.stringify(value) !== JSON.stringify(applied);
   const chips = activeChips(applied);
+  const hasAppliedFilters = chips.length > 0 || applied.group_by !== "day";
+  const canReset = dirty || hasAppliedFilters;
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -45,21 +51,38 @@ export function Filters({
   };
 
   return (
-    <Card className="p-4 sm:p-5">
+    <section className="border-b border-line pb-5">
       <form onSubmit={submit} aria-label="Mention filters">
-        <div className="mb-4 flex items-center gap-2 text-ink-2">
-          <SlidersHorizontal size={15} aria-hidden="true" />
-          <h2 className="font-mono text-[.7rem] font-medium uppercase tracking-[.16em]">
+        <div className="mb-4 flex items-center justify-between gap-3 sm:justify-start">
+          <button
+            type="button"
+            className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-ink sm:cursor-default"
+            aria-expanded={mobileOpen}
+            aria-controls="filter-fields"
+            onClick={() => setMobileOpen((open) => !open)}
+          >
+            <SlidersHorizontal size={16} aria-hidden="true" />
             Filters
-          </h2>
+            {chips.length > 0 && (
+              <span className="rounded-full bg-clay-soft px-2 py-0.5 text-xs font-semibold text-forest">
+                {chips.length}
+              </span>
+            )}
+            <ChevronDown
+              size={16}
+              aria-hidden="true"
+              className={`transition-transform sm:hidden ${mobileOpen ? "rotate-180" : ""}`}
+            />
+          </button>
           {dirty && !invalidRange && (
-            <span className="rounded-full bg-clay-soft px-2 py-0.5 text-[.68rem] font-semibold text-clay">
-              Unapplied changes
-            </span>
+            <span className="text-xs font-medium text-forest">Unapplied changes</span>
           )}
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.1fr_1.1fr_1fr_1fr_.9fr_auto] lg:items-end">
+        <div
+          id="filter-fields"
+          className={`${mobileOpen ? "grid" : "hidden"} gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-[1.1fr_1.1fr_1fr_1fr_.9fr_auto] lg:items-end`}
+        >
           <Field label="Model">
             <Select
               aria-label="Model"
@@ -101,7 +124,8 @@ export function Filters({
             <Input
               aria-label="From"
               type="date"
-              max={value.date_to || undefined}
+              min={DATA_START}
+              max={value.date_to && value.date_to < DATA_END ? value.date_to : DATA_END}
               value={value.date_from ?? ""}
               onChange={(event) => onChange({ ...value, date_from: event.target.value || undefined })}
             />
@@ -111,7 +135,8 @@ export function Filters({
             <Input
               aria-label="To"
               type="date"
-              min={value.date_from || undefined}
+              min={value.date_from && value.date_from > DATA_START ? value.date_from : DATA_START}
+              max={DATA_END}
               aria-describedby={invalidRange ? "date-error" : undefined}
               aria-invalid={invalidRange}
               value={value.date_to ?? ""}
@@ -131,11 +156,21 @@ export function Filters({
           </Field>
 
           <div className="flex gap-2 sm:col-span-2 lg:col-span-1">
-            <Button type="button" variant="secondary" className="flex-1 lg:flex-none" onClick={onReset}>
+            <Button
+              type="button"
+              variant="secondary"
+              className="flex-1 lg:flex-none"
+              onClick={onReset}
+              disabled={!canReset || isRefreshing}
+            >
               <RotateCcw size={14} aria-hidden="true" />
               Reset
             </Button>
-            <Button type="submit" className="flex-1 lg:flex-none" disabled={invalidRange || isRefreshing}>
+            <Button
+              type="submit"
+              className="flex-1 lg:flex-none"
+              disabled={invalidRange || isRefreshing || !dirty}
+            >
               {isRefreshing ? "Applying…" : "Apply"}
             </Button>
           </div>
@@ -157,7 +192,7 @@ export function Filters({
                 key={chip.key}
                 type="button"
                 onClick={() => onRemove(chip.key)}
-                className="group inline-flex items-center gap-1.5 rounded-full border border-line bg-white py-1 pl-2.5 pr-2 text-xs font-medium text-ink-2 transition-colors hover:border-ember hover:text-ember"
+                className="group inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-line bg-white py-1 pl-2.5 pr-2 text-xs font-medium text-ink-2 transition-colors hover:border-ember hover:text-ember"
               >
                 <span className="text-ink-3 group-hover:text-ember">{chip.label}</span>
                 <span className="font-semibold">{chip.display}</span>
@@ -168,7 +203,7 @@ export function Filters({
           </div>
         )}
       </form>
-    </Card>
+    </section>
   );
 }
 
