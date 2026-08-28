@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { QueryProvider } from "@/shared/providers/query-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Brand Mentions Dashboard",
+  title: "Signaldesk | Brand Mentions",
+  description: "Track brand visibility across leading AI models.",
 };
 
 export default function RootLayout({
@@ -12,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body><QueryProvider>{children}</QueryProvider></body>
     </html>
   );
 }

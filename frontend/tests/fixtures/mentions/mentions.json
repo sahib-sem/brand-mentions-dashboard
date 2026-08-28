@@ -1,0 +1,37 @@
+{
+  "data": [
+    {
+      "id": "a8f2e492-c3ed-43bb-a62d-d59734c83412",
+      "query_text": "What are the best collaborative design tools for distributed product teams?",
+      "model": "chatgpt",
+      "mentioned": true,
+      "position": 2,
+      "sentiment": "positive",
+      "citation_url": "https://example.com/design-tools-report",
+      "created_at": "2025-02-15T10:30:00Z"
+    },
+    {
+      "id": "fd6a3a89-5b3a-49a0-81e0-22ecf008ef32",
+      "query_text": "Compare enterprise research repositories with strong privacy controls",
+      "model": "claude",
+      "mentioned": false,
+      "position": null,
+      "sentiment": "neutral",
+      "citation_url": null,
+      "created_at": "2025-02-14T08:15:00Z"
+    },
+    {
+      "id": "381706de-adb2-48c9-a1ec-57a0689b90fc",
+      "query_text": "Which AI analytics platforms offer reliable citation tracking?",
+      "model": "perplexity",
+      "mentioned": true,
+      "position": 1,
+      "sentiment": "positive",
+      "citation_url": "https://example.com/ai-analytics",
+      "created_at": "2025-02-13T16:45:00Z"
+    }
+  ],
+  "total": 52,
+  "page": 1,
+  "per_page": 25
+}

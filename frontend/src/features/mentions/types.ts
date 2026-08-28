@@ -1,10 +1,12 @@
-// Types matching the backend API contract
+export type Model = "chatgpt" | "claude" | "gemini" | "perplexity";
+export type Sentiment = "positive" | "neutral" | "negative";
+export type GroupBy = "day" | "week";
 
 export interface MentionFilters {
-  model?: "chatgpt" | "claude" | "gemini" | "perplexity";
-  sentiment?: "positive" | "neutral" | "negative";
-  date_from?: string; // YYYY-MM-DD
-  date_to?: string; // YYYY-MM-DD
+  model?: Model;
+  sentiment?: Sentiment;
+  date_from?: string;
+  date_to?: string;
 }
 
 export interface MentionsRequest {
@@ -34,15 +36,8 @@ export interface MentionsResponse {
 export interface TrendsRequest {
   date_from?: string;
   date_to?: string;
-  group_by: "day" | "week";
+  group_by: GroupBy;
 }
 
-export interface TrendPoint {
-  date: string;
-  total: number;
-  mentioned: number;
-}
-
-export interface TrendsResponse {
-  data: TrendPoint[];
-}
+export interface TrendPoint { date: string; total: number; mentioned: number; }
+export interface TrendsResponse { data: TrendPoint[]; }

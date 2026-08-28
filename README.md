@@ -101,20 +101,35 @@ Build a single dashboard page with:
 
 ### Backend
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python seed_db.py        # Creates and seeds the SQLite database
-uvicorn main:app --reload
+uv --directory backend sync
+make seed               # Creates and seeds backend/mentions.db
+make dev-api            # http://localhost:8000
 ```
 
 ### Frontend
 ```bash
-cd frontend
-npm install
-npm run dev
+npm --prefix frontend install
+make dev-web            # http://localhost:3000
 ```
+
+Set `NEXT_PUBLIC_API_URL` for the deployed API URL. Set the backend
+`AICLICKS_CORS_ORIGINS` to a comma-separated list of allowed frontend origins.
+
+### Quality checks
+
+```bash
+make check              # Ruff, Pyright, ESLint, TypeScript
+make test-api           # 19 database-backed API behavior tests
+make test-web           # 5 Playwright dashboard behavior tests
+make build              # Next.js production build
+```
+
+### Implementation structure
+
+- `backend/app/mentions`: typed SQLAlchemy model plus router/service/repository/schema slice
+- `backend/migrations`: initial Alembic migration
+- `frontend/src/features/mentions`: API boundary, React Query hooks, filters, chart, and table
+- `frontend/tests`: Playwright page objects, API data support, fixtures, and behavior specs
 
 ---
 
