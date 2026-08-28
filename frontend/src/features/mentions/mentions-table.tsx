@@ -160,12 +160,12 @@ export function MentionsTable({
         <div className="flex items-center gap-1.5">
           <Button
             variant="secondary"
-            className="h-9 w-9 p-0"
+            className="h-11 w-11 cursor-pointer p-0"
             aria-label="Previous page"
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
           >
-            <ChevronLeft size={16} aria-hidden="true" />
+            <ChevronLeft size={21} strokeWidth={2.25} aria-hidden="true" />
           </Button>
           <p className="nums px-2 text-xs text-ink-2">
             Page <strong className="font-semibold text-ink">{page}</strong> of{" "}
@@ -173,12 +173,12 @@ export function MentionsTable({
           </p>
           <Button
             variant="secondary"
-            className="h-9 w-9 p-0"
+            className="h-11 w-11 cursor-pointer p-0"
             aria-label="Next page"
             disabled={page >= pages}
             onClick={() => onPageChange(page + 1)}
           >
-            <ChevronRight size={16} aria-hidden="true" />
+            <ChevronRight size={21} strokeWidth={2.25} aria-hidden="true" />
           </Button>
         </div>
       </div>
